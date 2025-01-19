@@ -17,10 +17,20 @@ export default class MyPlugin extends Plugin {
 		await this.loadSettings();
 
 		// This creates an icon in the left ribbon.
-		const ribbonIconEl = this.addRibbonIcon('dice', 'Sample Plugin', (evt: MouseEvent) => {
+		const ribbonIconEl = this.addRibbonIcon('dice', 'Sample Plugin', async (evt: MouseEvent) => {
 			// Called when the user clicks the icon.
-			new Notice('Hello world!');
+			new Notice('Hello world?');
+			// retrieve text in the user clipboard
+			const clipText = await navigator.clipboard.readText();
+			// Insert hello world at the cursor position
+			const editor = this.app.workspace.activeEditor?.editor;
+			if (editor) {
+			editor.replaceRange(
+				clipText,
+				editor.getCursor()
+			)}		
 		});
+
 		// Perform additional things with the ribbon
 		ribbonIconEl.addClass('my-plugin-ribbon-class');
 
