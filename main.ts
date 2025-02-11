@@ -1,4 +1,5 @@
 import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
+import { execa } from 'execa';
 
 // Remember to rename these classes and interfaces!
 
@@ -19,16 +20,35 @@ export default class MyPlugin extends Plugin {
 		// This creates an icon in the left ribbon.
 		const ribbonIconEl = this.addRibbonIcon('dice', 'Sample Plugin', async (evt: MouseEvent) => {
 			// Called when the user clicks the icon.
-			new Notice('Hello world?');
+			new Notice('Hello world!');
 			// retrieve text in the user clipboard
 			const clipText = await navigator.clipboard.readText();
-			// Insert hello world at the cursor position
-			const editor = this.app.workspace.activeEditor?.editor;
-			if (editor) {
-			editor.replaceRange(
-				clipText,
-				editor.getCursor()
-			)}		
+			
+			console.log('Clipboard text:', clipText); 
+
+			// call pdfannots2json.exe using the retreived text on clipboard
+			try {
+				const result = await execa(
+					'C:\\Users\\firef\\iCloudDrive\\iCloud~md~obsidian\\Notes\\.obsidian\\plugins\\obsidian-extract-pdf-annots\\pdfannots2json.exe',
+					['C:\\Users\\firef\\iCloudDrive\\ebooks\\Deep Work - Cal Newport (2016).pdf']
+					//[clipText]
+				);
+				console.log('Command result:', result);
+			
+				// Insert the result text at the cursor position
+				const editor = this.app.workspace.activeEditor?.editor;
+				if (editor) {
+					editor.replaceRange(
+						result.stdout,
+						editor.getCursor()
+					);
+					console.log('Inserted text:', result.stdout);
+				} else {
+					console.log('No active editor found.');
+				}
+			} catch (error) {
+				console.error('Error executing command:', error);
+			}
 		});
 
 		// Perform additional things with the ribbon
@@ -80,12 +100,14 @@ export default class MyPlugin extends Plugin {
 
 		// If the plugin hooks up any global DOM events (on parts of the app that doesn't belong to this plugin)
 		// Using this function will automatically remove the event listener when this plugin is disabled.
-		this.registerDomEvent(document, 'click', (evt: MouseEvent) => {
-			console.log('click', evt);
-		});
+		
+		//this.registerDomEvent(document, 'click', (evt: MouseEvent) => {
+		//	console.log('click', evt);
+		//	
+		//});
 
 		// When registering intervals, this function will automatically clear the interval when the plugin is disabled.
-		this.registerInterval(window.setInterval(() => console.log('setInterval'), 5 * 60 * 1000));
+		//this.registerInterval(window.setInterval(() => console.log('setInterval'), 5 * 60 * 1000));
 	}
 
 	onunload() {
