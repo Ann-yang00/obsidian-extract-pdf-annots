@@ -3,8 +3,26 @@ import * as fs from 'fs';
 import * as os from 'os';
 import { FileSystemAdapter, Notice, App } from 'obsidian';
 
-// Borrowed from https://github.com/mgmeyers/obsidian-zotero-integration ==============
 
+// Simple parsing of the returned json from pdfannots2json.exe
+export function parseHighlights(jsonString: string): string {
+    let texts = '';
+    try {
+        const jsonObject = JSON.parse(jsonString);
+        const extracted_text = jsonObject.map((highlight: { annotatedText: string }) => highlight.annotatedText);
+        // formatting
+        for (let i = 0; i < extracted_text.length; i++) {
+            const single_highlight = extracted_text[i];
+            texts += `${single_highlight}\n\n`;
+        }
+        return texts;
+    } catch (error) {
+        console.error('Error parsing highlights:', error);
+        return 'Error parsing highlights';
+    }
+}
+
+// Borrowed from https://github.com/mgmeyers/obsidian-zotero-integration ==================
 export function getVaultRoot() {
     return (this.app.vault.adapter as FileSystemAdapter).getBasePath();
   }
@@ -51,8 +69,7 @@ export function getExecutablePath() {
     return path.join(getExeRoot(), getExeName()).replace(/\\/g, '\\\\');
 }
 
-// Borrowed from https://github.com/munach/obsidian-extract-pdf-annotations ============
-
+// Borrowed from https://github.com/munach/obsidian-extract-pdf-annotations ==================
 export function sanitizeFilePath(filePath: string) { 
     try {
         const singleQuotedfilePath = filePath.replace(/"/g, '');
