@@ -1,5 +1,7 @@
 import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
 import { execa } from 'execa';
+import { sanitizeFilePath, getExecutablePath, ensureExecutableSync } from 'helpers';
+
 
 // Remember to rename these classes and interfaces!
 
@@ -21,28 +23,41 @@ export default class MyPlugin extends Plugin {
 		const ribbonIconEl = this.addRibbonIcon('dice', 'Sample Plugin', async (evt: MouseEvent) => {
 			// Called when the user clicks the icon.
 			new Notice('Hello world!');
+
 			// retrieve text in the user clipboard
 			const clipText = await navigator.clipboard.readText();
+			//console.log('Clipboard text:', clipText); 
+
+			const sanitized_path = sanitizeFilePath(clipText);
+			//console.log('Sanitised text is:', sanitized_path); 
 			
-			console.log('Clipboard text:', clipText); 
+			const exe_path = getExecutablePath();
+			//console.log('Retreived exe path is:', exe_path); 
 
 			// call pdfannots2json.exe using the retreived text on clipboard
 			try {
+				const isExecutable = ensureExecutableSync(exe_path);
+
+				if (!isExecutable) {
+					console.error('Error: PDF utility is not executable');
+					return false;
+				}
+
 				const result = await execa(
-					'C:\\Users\\firef\\iCloudDrive\\iCloud~md~obsidian\\Notes\\.obsidian\\plugins\\obsidian-extract-pdf-annots\\pdfannots2json.exe',
-					['C:\\Users\\firef\\iCloudDrive\\ebooks\\Deep Work - Cal Newport (2016).pdf']
-					//[clipText]
+					exe_path,
+					[sanitized_path]
 				);
+
 				console.log('Command result:', result);
 			
 				// Insert the result text at the cursor position
 				const editor = this.app.workspace.activeEditor?.editor;
 				if (editor) {
 					editor.replaceRange(
-						result.stdout,
+						'result placeholder',
+						//result.stdout,
 						editor.getCursor()
 					);
-					console.log('Inserted text:', result.stdout);
 				} else {
 					console.log('No active editor found.');
 				}
