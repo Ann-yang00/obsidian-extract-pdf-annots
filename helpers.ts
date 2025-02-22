@@ -2,6 +2,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 import * as os from 'os';
 import { FileSystemAdapter, Notice, App } from 'obsidian';
+let PDFpath: string;
 
 // replace spaces for inserting external pdf link
 export function replaceSpaces(text: string): string {
@@ -12,15 +13,17 @@ export function replaceSpaces(text: string): string {
 export function insertPDFInfo(filepath: string): string { 
   const pdf_name = path.basename(filepath);
   const hyperlink = replaceSpaces(filepath);
-
+  PDFpath = hyperlink;
   return `# ${pdf_name}\n[PDF link](file:///${hyperlink})\n\n## Annotations\n\n`;
 }
 
 // from each highlight, extract the annotated text, page number, and color
 export function formatProperties(jsonString: any): string {
   const annot = jsonString.annotatedText.replace(/�/g, ''); // remove weird characters
+  const page_n = jsonString.page;
+  const page_link = `<file:///${PDFpath}#page=${page_n}>`
   // need CSS callout to display pretty colours
-  const text = `>[!quote|${jsonString.color}] Highlight (p.${jsonString.page})\n>${annot}`;
+  const text = `>[!quote|${jsonString.color}] Highlight (p.${page_n})\n>${annot} ([${page_n}](${page_link}))`;
   
   if (jsonString.comment) {
     return text + `\n>>${jsonString.comment}\n\n`;
