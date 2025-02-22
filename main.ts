@@ -20,9 +20,9 @@ export default class MyPlugin extends Plugin {
 		await this.loadSettings();
 
 		// This creates an icon in the left ribbon.
-		const ribbonIconEl = this.addRibbonIcon('dice', 'Sample Plugin', async (evt: MouseEvent) => {
+		const ribbonIconEl = this.addRibbonIcon('document', 'PDF Annot', async (evt: MouseEvent) => {
 			// Called when the user clicks the icon.
-			new Notice('Hello world!');
+			new Notice('Importing PDF Annotations...');
 
 			// retrieve text in the user clipboard
 			const clipText = await navigator.clipboard.readText();
@@ -39,6 +39,7 @@ export default class MyPlugin extends Plugin {
 				const isExecutable = ensureExecutableSync(exe_path);
 
 				if (!isExecutable) {
+					new Notice('PDF utility is not executable');
 					console.error('Error: PDF utility is not executable');
 					return false;
 				}
@@ -63,6 +64,7 @@ export default class MyPlugin extends Plugin {
 				}
 			} catch (error) {
 				console.error('Error executing command:', error);
+				new Notice('Oops! Something went wrong...');
 			}
 		});
 

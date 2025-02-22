@@ -16,21 +16,18 @@ export function insertPDFInfo(filepath: string): string {
   return `# ${pdf_name}\n[PDF link](file:///${hyperlink})\n\n## Annotations\n\n`;
 }
 
-interface Highlight {
-  annotatedText: string;
-  color: string;
-  page: number;
-  date: string;
-  comment: string;
-}
-
 // from each highlight, extract the annotated text, page number, and color
-export function retreiveProperties(jsonString: any): Highlight[] {
-  return jsonString.map((highlight: { annotatedText: string, color: string, page: number }) => ({
-    annotatedText: highlight.annotatedText,
-    color: highlight.color,
-    page: highlight.page
-  }));
+export function formatProperties(jsonString: any): string {
+  const annot = jsonString.annotatedText.replace(/�/g, ''); // remove weird characters
+  // need CSS callout to display pretty colours
+  const text = `>[!quote|${jsonString.color}] Highlight (p.${jsonString.page})\n>${annot}`;
+  
+  if (jsonString.comment) {
+    return text + `\n>>${jsonString.comment}\n\n`;
+  } else {
+    // no note in this highlight
+    return text + '\n\n';
+  }
 }
 
 // Simple parsing of the returned json from pdfannots2json.exe
@@ -38,13 +35,9 @@ export function parseHighlights(jsonString: string): string {
     let texts = '';
     try {
         const jsonObject = JSON.parse(jsonString);
-        const extracted_text = retreiveProperties(jsonObject);
-        //const extracted_text = jsonObject.map((highlight: { annotatedText: string }) => highlight.annotatedText);
         // formatting
-        for (let i = 0; i < extracted_text.length; i++) {
-            const single_highlight = extracted_text[i];
-            // need CSS callout to display pretty colours
-            texts += `>[!quote|${single_highlight.color}] Highlight p.${single_highlight.page}\n>${single_highlight.annotatedText}\n\n`;
+        for (let i = 0; i < jsonObject.length; i++) {
+            texts += formatProperties(jsonObject[i]);
         }
         return texts;
     } catch (error) {
