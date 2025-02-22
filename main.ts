@@ -1,6 +1,6 @@
 import { App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
 import { execa } from 'execa';
-import { sanitizeFilePath, getExecutablePath, ensureExecutableSync, parseHighlights } from 'helpers';
+import { sanitizeFilePath, getExecutablePath, ensureExecutableSync, parseHighlights, insertPDFInfo } from 'helpers';
 
 
 // Remember to rename these classes and interfaces!
@@ -48,14 +48,14 @@ export default class MyPlugin extends Plugin {
 					[sanitized_path]
 				);
 
-				//console.log('Returned result:', result.stdout);
-				console.log('Parsed result:', 'result placeholder');
+				console.log('Returned result:', result.stdout);
+				//console.log('Parsed result:', 'result placeholder');
 			
 				// Insert the result text at the cursor position
 				const editor = this.app.workspace.activeEditor?.editor;
 				if (editor) {
 					editor.replaceRange(
-						parseHighlights(result.stdout),
+						insertPDFInfo(sanitized_path) + parseHighlights(result.stdout),
 						editor.getCursor()
 					);
 				} else {
